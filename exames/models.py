@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
 
 class TiposExames(models.Model):
     tipo_choices = (
@@ -7,7 +8,7 @@ class TiposExames(models.Model):
         ('S', 'Exame de Sangue')
     )
     nome = models.CharField(max_length=50)
-    tipo = models.CharField(max_length=2, choices=tipo_choices)
+    tipo = models.CharField(max_length=1, choices=tipo_choices)
     preco = models.FloatField()
     disponivel = models.BooleanField(default=True)
     horario_inicial = models.IntegerField()
@@ -31,6 +32,16 @@ class SolicitacaoExame(models.Model):
     def __str__(self):
         return f'{self.usuario} | {self.exame.nome}'
     
+    def badge_template(self):
+        if self.status == "E":
+            classes = 'bg-warning text-dark'
+            texto = "Em análise"
+        elif self.status == "F":
+            classes = 'bg-success'
+            texto = "Finalizado"
+
+        return mark_safe(f'<span class="badge {classes}">{texto}</span>')
+
 class PedidosExames(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     exames = models.ManyToManyField(SolicitacaoExame)
